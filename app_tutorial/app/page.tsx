@@ -6,6 +6,10 @@ export default function HomePage() {
       <Link href="/about" className="text-xl text-blue-500 inline-block">
         Go to About
       </Link>
+      <br />
+      <Link href="/info/contact" className="text-xl text-blue-500 inline-block">
+        Go to Contact
+      </Link>
     </div>
   );
 }
