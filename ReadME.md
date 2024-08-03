@@ -246,3 +246,135 @@ Benefits :
 
 Only the components that need to be client (interact with user) should be. The rest can be
 server side and also these components can be nested in server component
+
+### Client Components
+
+Benefits :
+
+- Interactivity: Client Components can use state, effects, and event listeners, meaning they can provide immediate feedback to the user and update the UI.
+- Browser APIs: Client Components have access to browser APIs, like geolocation or localStorage, allowing you to build UI for specific use cases.
+
+### Challenge
+
+- create counter page and setup basic counter
+
+```tsx
+"use client";
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="flex flex-col items-center w-[100px]">
+      <p className="text-5xl font-bold">{count}</p>
+      <button
+        onClick={() => setCount(count + 1)}
+        className="bg-blue-500 rounded-md text-white px-4 py-2 mt-4"
+      >
+        Increment
+      </button>
+    </div>
+  );
+}
+export default Counter;
+```
+
+## Challenge - Refactor
+
+- create Counter component and import in CounterPage
+- now page can be server component
+
+```tsx
+import Counter from "@/components/Counter";
+
+function CounterPage() {
+  return (
+    <section>
+      <h1 className="text-6xl mb-16">Page Content</h1>
+      <Counter />
+    </section>
+  );
+}
+export default CounterPage;
+```
+
+## Fetch Data in Server Components
+
+- create tours/page.tsx
+- just add async and start using await 🚀🚀🚀
+- the same for db
+- Next.tsx extends the native Web fetch() API to allow each request on the server to set its own persistent caching semantics.
+
+```tsx
+const url = "https://www.course-api.com/react-tours-project";
+
+type Tour = {
+  id: string;
+  name: string;
+  info: string;
+  image: string;
+  price: string;
+};
+
+async function ToursPage() {
+  const response = await fetch(url);
+  const data: Tour[] = await response.json();
+  console.log(data);
+  return (
+    <section>
+      <h1 className="text-3xl mb-4">Tours</h1>
+
+      {data.map((tour) => {
+        return <h2 key={tour.id}>{tour.name}</h2>;
+      })}
+    </section>
+  );
+}
+export default ToursPage;
+```
+
+## Refactor and Delay
+
+- Refresh browser on another page, navigate to tours, observe delay.
+
+```tsx
+const fetchTours = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  const response = await fetch(url);
+  const data: Tour[] = await response.json();
+  return data;
+};
+
+async function ToursPage() {
+  const data = await fetchTours();
+}
+```
+
+## Loading Component
+
+The special file loading.js helps you create meaningful Loading UI with React Suspense. With this convention, you can show an instant loading state from the server while the content of a route segment loads. The new content is automatically swapped in once rendering is complete.
+
+- tours/loading.tsx
+
+```tsx
+"use client";
+const loading = () => {
+  return <span className="text-xl capitalize">loading tours...</span>;
+};
+export default loading;
+```
+
+## Error Component
+
+The error.tsx file convention allows you to gracefully handle unexpected runtime errors in nested routes.
+
+- tours/error.js
+- 'use client'
+
+```js
+"use client";
+const error = () => {
+  return <div>there was an error...</div>;
+};
+export default error;
+```
