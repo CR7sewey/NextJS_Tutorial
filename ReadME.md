@@ -598,3 +598,41 @@ return (
   </div>
 );
 ```
+
+## More Routing
+
+- Private Folders
+  \_folder
+- Route Groups
+  (dashboard)
+- Dynamic Routes
+
+  - [...folder] - Catch-all route segment
+  - [[...folder]] Optional catch-all route segment (used by Clerk)
+
+- create test folder app/\_css
+- create app/(dashboard)/auth
+
+  - the url is just '/auth'
+
+- create app/(dashboard)/auth/[sign-in]
+
+```ts
+const SignInPage = ({ params }: { params: { "sign-in": string } }) => {
+  console.log(params);
+  return <div>SignInPage</div>;
+};
+export default SignInPage;
+```
+
+- create app/(dashboard)/auth/[...sign-in]
+- create app/(dashboard)/auth/[[...sign-in]]
+
+```ts
+const SignInPage = ({ params }: { params: { "sign-in": string[] } }) => {
+  console.log(params);
+  console.log(params["sign-in"][1]);
+  return <div>SignInPage :{params["sign-in"][1]}</div>;
+};
+export default SignInPage;
+```
