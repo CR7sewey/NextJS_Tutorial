@@ -636,3 +636,193 @@ const SignInPage = ({ params }: { params: { "sign-in": string[] } }) => {
 };
 export default SignInPage;
 ```
+
+## Server Actions
+
+- asynchronous server functions that can be called directly from your components.
+
+- typical setup for server state mutations (create, update, delete)
+
+  - endpoint on the server (api route on Next.js)
+  - make request from the front-end
+    - setup form, handle submission etc
+
+- Next.js server actions allow you to mutate server state directly from within a React component by defining server-side logic alongside client-side interactions.
+
+Rules :
+
+- must be async
+- add 'use server' in function body (only in RSC)
+- can use in RCC but only as import
+
+RSC - React Server Component
+RCC - React Client Component
+
+```tsx
+export default function ServerComponent() {
+  async function myAction(formData) {
+    "use server";
+    // access input values with formData
+    // formData.get('name')
+    // mutate data (server)
+    // revalidate cache
+  }
+
+  return <form action={myAction}>...</form>;
+}
+```
+
+- or setup in a separate file ('use server' at the top)
+  - can use in both (RSC and RCC)
+
+utils/actions.js
+
+```tsx
+"use server";
+
+export async function myAction() {
+  // ...
+}
+```
+
+```tsx
+"use client";
+
+import { myAction } from "./actions";
+
+export default function ClientComponent() {
+  return (
+    <form action={myAction}>
+      <button type="submit">Add to Cart</button>
+    </form>
+  );
+}
+```
+
+## Actions Page - Setup
+
+- create Form and UsersList in components
+
+```tsx
+import Form from "@/components/Form";
+import UsersList from "@/components/UsersList";
+
+function ActionsPage() {
+  return (
+    <>
+      <Form />
+      <UsersList />
+    </>
+  );
+}
+export default ActionsPage;
+```
+
+## Form - Setup
+
+```tsx
+const createUser = async () => {
+  "use server";
+  console.log("creating user....");
+};
+
+function Form() {
+  return (
+    <form action={createUser} className={formStyle}>
+      <h2 className="text-2xl capitalize mb-4">create user</h2>
+      <input
+        type="text"
+        name="firstName"
+        required
+        className={inputStyle}
+        defaultValue="peter"
+      />
+      <input
+        type="text"
+        name="lastName"
+        required
+        className={inputStyle}
+        defaultValue="smith"
+      />
+      <button type="submit" className={btnStyle}>
+        submit
+      </button>
+    </form>
+  );
+}
+export default Form;
+
+const formStyle = "max-w-lg flex flex-col gap-y-4  shadow rounded p-8";
+const inputStyle = "border shadow rounded py-2 px-3 text-gray-700";
+const btnStyle =
+  "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded capitalize";
+```
+
+## Actions File
+
+- create utils/actions.ts
+- make "Form" Client Component ('use client')
+- import in Form
+
+```ts
+"use server";
+
+export const createUser = async () => {
+  console.log("creating user....");
+};
+```
+
+```tsx
+"use client";
+
+import { createUser } from "@/utils/actions";
+```
+
+## FormData
+
+```ts
+export const createUser = async (formData: FormData) => {
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const rawData = Object.fromEntries(formData);
+  console.log(rawData);
+  console.log({ firstName, lastName });
+};
+```
+
+## Save User
+
+- just as an example
+- create "users.json" (root !!!)
+- won't work on vercel (deployment)
+
+```ts
+"use server";
+
+import { readFile, writeFile } from "fs/promises";
+
+type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+};
+
+export const createUser = async (formData: FormData) => {
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const newUser: User = { firstName, lastName, id: Date.now().toString() };
+  await saveUser(newUser);
+};
+
+export const fetchUsers = async (): Promise<User[]> => {
+  const result = await readFile("users.json", { encoding: "utf8" });
+  const users = result ? JSON.parse(result) : [];
+  return users;
+};
+
+const saveUser = async (user: User) => {
+  const users = await fetchUsers();
+  users.push(user);
+  await writeFile("users.json", JSON.stringify(users));
+};
+```
