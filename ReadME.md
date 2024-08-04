@@ -419,3 +419,182 @@ const page = ({ params }: { params: { id: string } }) => {
 };
 export default page;
 ```
+
+## Challenge - Setup Links
+
+```tsx
+return (
+  <section>
+    <h1 className="text-3xl mb-4">Tours</h1>
+
+    {data.map((tour) => {
+      return (
+        <Link
+          key={tour.id}
+          href={`/tours/${tour.id}`}
+          className="hover:text-blue-500"
+        >
+          <h2>{tour.name}</h2>
+        </Link>
+      );
+    })}
+  </section>
+);
+```
+
+## Next Image Component
+
+- get random image from pexels site
+  [Random Image](https://www.pexels.com/photo/assorted-map-pieces-2859169/)
+
+The Next.js Image component extends the HTML <img> element with features for automatic image optimization:
+
+- Size Optimization: Automatically serve correctly sized images for each device, using modern image formats like WebP and AVIF.
+- Visual Stability: Prevent layout shift automatically when images are loading.
+- Faster Page Loads: Images are only loaded when they enter the viewport using native browser lazy loading, with optional blur-up placeholders.
+- Asset Flexibility: On-demand image resizing, even for images stored on remote servers
+
+- disable cache
+- width and height
+
+- priority property to prioritize the image for loading
+  When true, the image will be considered high priority and preload.
+
+```tsx
+import mapsImg from "@/images/maps.jpg";
+import Image from "next/image";
+const url = "https://www.course-api.com/images/tours/tour-1.jpeg";
+
+const page = async ({ params }: { params: { id: string } }) => {
+  return (
+    <div>
+      <h1 className="text-4xl">ID : {params.id}</h1>
+      <section className="flex gap-x-4 mt-4">
+        <div>
+          <Image
+            src={mapsImg}
+            alt="maps"
+            width={192}
+            height={192}
+            className="w-48 h-48 object-cover rounded"
+          />
+          <h2>local image</h2>
+        </div>
+      </section>
+    </div>
+  );
+};
+export default page;
+```
+
+## Remote Images
+
+- To use a remote image, the src property should be a URL string.
+
+- Since Next.js does not have access to remote files during the build process, you'll need to provide the width, height and optional blurDataURL props manually.
+
+- The width and height attributes are used to infer the correct aspect ratio of image and avoid layout shift from the image loading in. The width and height do not determine the rendered size of the image file.
+
+```tsx
+import mapsImg from "@/images/maps.jpg";
+import Image from "next/image";
+const url = "https://www.course-api.com/images/tours/tour-1.jpeg";
+
+const page = async ({ params }: { params: { id: string } }) => {
+  return (
+    <div>
+      <h1 className="text-4xl">ID : {params.id}</h1>
+      <section className="flex gap-x-4 mt-4">
+        <div>
+          <Image
+            src={mapsImg}
+            alt="maps"
+            width={192}
+            height={192}
+            className="w-48 h-48 object-cover rounded"
+          />
+          <h2>local image</h2>
+        </div>
+        <div>
+          <Image
+            src={url}
+            alt="tour"
+            width={192}
+            height={192}
+            priority
+            className="w-48 h-48 object-cover rounded"
+          />
+          <h2>remote image</h2>
+        </div>
+      </section>
+    </div>
+  );
+};
+export default page;
+```
+
+```mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.course-api.com",
+        port: "",
+        pathname: "/images/**",
+      },
+    ],
+  },
+};
+
+export default nextConfig;
+```
+
+- To safely allow optimizing images, define a list of supported URL patterns in next.config.mjs. Be as specific as possible to prevent malicious usage.
+
+- restart dev server
+
+## Responsive Images
+
+- The fill prop allows your image to be sized by its parent element
+- sizes property helps the browser select the most appropriate image size to load based on the user's device and screen size, improving website performance and user experience.
+
+A string that provides information about how wide the image will be at different breakpoints. The value of sizes will greatly affect performance for images using fill or which are styled to have a responsive size.
+
+The sizes property serves two important purposes related to image performance:
+
+First, the value of sizes is used by the browser to determine which size of the image to download, from next/image's automatically-generated source set. When the browser chooses, it does not yet know the size of the image on the page, so it selects an image that is the same size or larger than the viewport. The sizes property allows you to tell the browser that the image will actually be smaller than full screen. If you don't specify a sizes value in an image with the fill property, a default value of 100vw (full screen width) is used.
+
+Second, the sizes property configures how next/image automatically generates an image source set. If no sizes value is present, a small source set is generated, suitable for a fixed-size image. If sizes is defined, a large source set is generated, suitable for a responsive image. If the sizes property includes sizes such as 50vw, which represent a percentage of the viewport width, then the source set is trimmed to not include any values which are too small to ever be necessary.
+
+tours.tsx
+
+```js
+return (
+  <div className="grid md:grid-cols-2 gap-8">
+    {data.map((tour) => {
+      return (
+        <Link
+          key={tour.id}
+          href={`/tours/${tour.id}`}
+          className="hover:text-blue-500"
+        >
+          <div className="relative h-48 mb-2">
+            <Image
+              src={tour.image}
+              alt={tour.name}
+              fill
+              sizes="33vw"
+              // sizes='(max-width:768px) 100vw,(max-width:1200px) 50vw, 33vw'
+              priority
+              className="object-cover rounded"
+            />
+          </div>
+          <h2>{tour.name}</h2>
+        </Link>
+      );
+    })}
+  </div>
+);
+```
