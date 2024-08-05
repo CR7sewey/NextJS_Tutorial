@@ -826,3 +826,61 @@ const saveUser = async (user: User) => {
   await writeFile("users.json", JSON.stringify(users));
 };
 ```
+
+## UsersList
+
+```tsx
+import { fetchUsers } from "@/utils/actions";
+async function UsersList() {
+  const users = await fetchUsers();
+  return (
+    <div className="mt-4">
+      {users.length ? (
+        <div>
+          {users.map((user) => (
+            <h4 key={user.id} className="capitalize text-lg">
+              {user.firstName} {user.lastName}
+            </h4>
+          ))}
+        </div>
+      ) : (
+        <p>No users found...</p>
+      )}
+    </div>
+  );
+}
+export default UsersList;
+```
+
+## RevalidatePath
+
+```ts
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export const createUser = async (formData: FormData) => {
+  //...
+  revalidatePath("/actions");
+};
+```
+
+- if the data is displayed in a different page
+
+```ts
+export const createUser = async (formData: FormData) => {
+  //...
+  redirect("/");
+};
+```
+
+- don't "redirect" place inside "try" block
+
+```tsx
+try {
+  await saveUser(newUser);
+  // will trigger error
+  redirect("/");
+} catch (error) {
+  console.error(error);
+}
+```

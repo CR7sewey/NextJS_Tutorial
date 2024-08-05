@@ -1,8 +1,10 @@
 "use server";
 import { readFile, writeFile } from "fs/promises";
+import { revalidatePath } from "next/cache"; // bcs next is cache strong oriented and dowes not update directly when submiting the form
+import { redirect } from "next/navigation";
 const jsonURL = "users.json";
 
-type User = {
+export type User = {
   id: string;
   firstName: string;
   lastName: string;
@@ -20,7 +22,14 @@ export const createUser = async (formData: FormData) => {
   };
   console.log("aqui!!", firstName, lastName);
 
-  await saveUsers(newUser);
+  try {
+    await saveUsers(newUser);
+    // redirect('/') trigger an error
+  } catch (e) {
+    console.log(e);
+  }
+  //revalidatePath("/actions");
+  redirect("/"); // navigate back to the home page, dont place it in try and catch
 };
 
 // BASICALY WE DIRECTLY WORK WITH OUR BACKEND CODE IN OUR REACT COMPONENT
