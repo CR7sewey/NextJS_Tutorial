@@ -884,3 +884,68 @@ try {
   console.error(error);
 }
 ```
+
+## Pending State
+
+- make sure Form is Client Component
+- in createUser switch back to revalidatePath(/actions)
+
+[React Docs - useFormStatus](https://react.dev/reference/react-dom/hooks/useFormStatus)
+
+- useFormStatus()
+- The useFormStatus Hook provides status information of the last form submission.
+
+- The useFormStatus Hook must be called from a component that is rendered inside a <form>.
+- useFormStatus will only return status information for a parent <form>.
+  It will not return status information for any <form> rendered in that same component or children components.
+
+  ```tsx
+  import { useFormStatus, useFormState } from "react-dom";
+
+  const SubmitButton = () => {
+    const { pending } = useFormStatus();
+    return (
+      <button type="submit" className={btnStyle} disabled={pending}>
+        {pending ? "submitting..." : "submit"}
+      </button>
+    );
+  };
+  ```
+
+## Result
+
+[React Docs - useFormState](https://react.dev/reference/react-dom/hooks/useFormState)
+
+- useFormState()
+- a Hook that allows you to update state based on the result of a form action.
+
+```tsx
+const [message, formAction] = useFormState(createUser, null);
+return (
+  <form action={formAction} className={formStyle}>
+    {message && <p>{message}</p>}
+    ...
+  </form>
+);
+```
+
+```ts
+export const createUser = async (prevState: any, formData: FormData) => {
+  // current state of the form
+  console.log(prevState);
+
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const newUser: User = { firstName, lastName, id: Date.now().toString() };
+
+  try {
+    await saveUser(newUser);
+    revalidatePath("/actions");
+    // throw Error();
+    return "user created successfully...";
+  } catch (error) {
+    console.error(error);
+    return "failed to create user...";
+  }
+};
+```
