@@ -949,3 +949,121 @@ export const createUser = async (prevState: any, formData: FormData) => {
   }
 };
 ```
+
+## Delete User
+
+- create components/DeleteButton
+- refactor UsersList
+
+```tsx
+function DeleteButton({ id }: { id: string }) {
+  return (
+    <form>
+      <button
+        type="submit"
+        className="bg-red-500 text-white text-xs rounded p-2"
+      >
+        delete
+      </button>
+    </form>
+  );
+}
+export default DeleteButton;
+```
+
+```tsx
+import { fetchUsers } from "@/utils/actions";
+import DeleteButton from "./DeleteButton";
+async function UsersList() {
+  const users = await fetchUsers();
+  return (
+    <div className="mt-4">
+      {users.length ? (
+        <div className="max-w-lg">
+          {users.map((user) => (
+            <h4
+              key={user.id}
+              className="capitalize text-lg flex justify-between items-center mb-2"
+            >
+              {user.firstName} {user.lastName}
+              <DeleteButton id={user.id} />
+            </h4>
+          ))}
+        </div>
+      ) : (
+        <p>No users found...</p>
+      )}
+    </div>
+  );
+}
+export default UsersList;
+```
+
+## Delete Action
+
+```ts
+export const deleteUser = async (formData: FormData) => {
+  const id = formData.get("id") as string;
+  const users = await fetchUsers();
+  const updatedUsers = users.filter((user: User) => user.id !== id);
+  await writeFile("users.json", JSON.stringify(updatedUsers));
+  revalidatePath("/actions");
+};
+```
+
+```tsx
+import { deleteUser } from "@/utils/actions";
+
+function DeleteButton({ id }: { id: string }) {
+  return (
+    <form action={deleteUser}>
+      <input type="hidden" name="id" value={id} />
+      <button
+        type="submit"
+        className="bg-red-500 text-white text-xs rounded p-2"
+      >
+        delete
+      </button>
+    </form>
+  );
+}
+export default DeleteButton;
+```
+
+```tsx
+import { deleteUser, removeUser } from "@/utils/actions";
+
+function DeleteButton({ id }: { id: string }) {
+  const removeUserWithId = removeUser.bind(null, id);
+  return (
+    <form action={removeUserWithId}>
+      <input type="hidden" name="name" value="shakeAndBake" />
+      <button
+        type="submit"
+        className="bg-red-500 text-white text-xs rounded p-2"
+      >
+        delete
+      </button>
+    </form>
+  );
+}
+export default DeleteButton;
+```
+
+## Bind Option
+
+- An alternative to passing arguments as hidden input fields in the form (e.g. `<input type="hidden" name="userId" value={userId} />`) is to use the bind option. With this approach, the value is not part of the rendered HTML and will not be encoded.
+
+- .bind works in both Server and Client Components. It also supports progressive enhancement.
+
+```ts
+export const removeUser = async (id: string, formData: FormData) => {
+  const name = formData.get("name") as string;
+  console.log(name);
+
+  const users = await fetchUsers();
+  const updatedUsers = users.filter((user) => user.id !== id);
+  await writeFile("users.json", JSON.stringify(updatedUsers));
+  revalidatePath("/actions");
+};
+```

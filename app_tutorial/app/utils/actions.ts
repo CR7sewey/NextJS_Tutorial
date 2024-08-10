@@ -54,3 +54,37 @@ export const saveUsers = async (user: User): Promise<void> => {
   users.push({ ...user });
   await writeFile(jsonURL, JSON.stringify(users));
 };
+
+export const deleteUser = async (formData: FormData): Promise<void> => {
+  console.log(formData, "aaaaaaaa");
+  const id = formData.get("id") as string;
+  const users: User[] = await fetchUsers();
+  const new_users = users.filter((vals) => vals.id !== id);
+  await writeFile(jsonURL, JSON.stringify(new_users));
+  revalidatePath("/actions");
+};
+
+export const deleteUser2 = async (
+  prevState: any,
+  formData: FormData
+): Promise<void> => {
+  console.log(prevState, "this");
+
+  const id = formData.get("id") as string;
+  console.log(id, "sou um id");
+
+  const users: User[] = await fetchUsers();
+  const new_users = users.filter((vals) => vals.id !== id);
+  await writeFile(jsonURL, JSON.stringify(new_users));
+  revalidatePath("/actions");
+};
+
+export const removeUser = async (id: string, formData: FormData) => {
+  const name = formData.get("name") as string;
+  console.log(name);
+
+  const users = await fetchUsers();
+  const updatedUsers = users.filter((user) => user.id !== id);
+  await writeFile(jsonURL, JSON.stringify(updatedUsers));
+  revalidatePath("/actions");
+};
