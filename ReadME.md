@@ -1135,3 +1135,55 @@ Here, '/' is the url and request.url is the base.
 This means it's creating a new URL object that represents the root of the URL contained in request.url.
 
 For example, if request.url is 'http://example.com/path/to/resource', the new URL object would represent 'http://example.com/'.
+
+## Middleware
+
+[Docs](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+
+Middleware in Next.js is a piece of code that allows you to perform actions before a request is completed and modify the response accordingly.
+
+- create middleware.ts in the root
+- by default will be invoked for every route in your project
+
+```ts
+export function middleware(request) {
+  return Response.json({ msg: "hello there" });
+}
+
+export const config = {
+  matcher: "/about",
+};
+```
+
+```ts
+import { NextResponse } from "next/server";
+
+// This function can be marked `async` if using `await` inside
+export function middleware(request) {
+  return NextResponse.redirect(new URL("/", request.url));
+}
+
+// See "Matching Paths" below to learn more
+export const config = {
+  matcher: ["/about/:path*", "/tours/:path*"],
+};
+```
+
+## Local Build
+
+- cleanup middleware
+- fix css in UsersList.tsx
+- remove all users from 'users.json'
+- 'npm run build' followed by 'npm start'
+
+## Caching
+
+- [Vercel Video](https://www.youtube.com/watch?v=VBlSe8tvg4U)
+- [Docs](https://nextjs.org/docs/app/building-your-application/caching)
+
+VALID when npm run build - production ready - cache as much as possible!
+lambda or f - dynamic, the page is generated when the user visits that particular page
+static - the page is generated when the server is running, built at the built time
+
+in dev
+generate that page in every request
